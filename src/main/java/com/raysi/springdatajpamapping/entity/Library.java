@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -23,17 +25,15 @@ public class Library {
             allocationSize = 116
     )
     private Long libraryId;
+    private String libraryName;
 
     @OneToOne(
-            cascade = CascadeType.PERSIST
+            cascade = CascadeType.ALL
     )
+    @JoinColumn(name = "address_code", referencedColumnName = "addressCode")
     private Address address;
 
-    @OneToMany(
-            cascade = CascadeType.PERSIST
-
-    )
-    private Book book;
-
+    @OneToMany(mappedBy = "library", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Book> books;
 
 }

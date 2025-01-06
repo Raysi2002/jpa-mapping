@@ -1,6 +1,7 @@
 package com.raysi.springdatajpamapping.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,18 +16,22 @@ public class Book {
     @Id
     @GeneratedValue(
             strategy = GenerationType.SEQUENCE,
-            generator = "author_seq"
+            generator = "book_seq"
     )
     @SequenceGenerator(
-            name = "author_seq",
-            sequenceName = "author_sequence",
+            name = "book_seq",
+            sequenceName = "book_sequence",
             allocationSize = 116
     )
-    private Long authorId;
+    private Long bookId;
+    @NotNull
     private String bookName;
+    @NotNull
     private String genre;
-    @ManyToMany(
-
-    )
+    @ManyToMany(mappedBy = "books")
     private List<Author> authors;
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "library_id")
+    private Library library;
 }
