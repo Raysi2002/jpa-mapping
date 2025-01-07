@@ -1,10 +1,7 @@
 package com.raysi.springdatajpamapping.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import java.util.List;
 
@@ -13,6 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @ToString
+@Builder
 public class Library {
     @Id
     @GeneratedValue(
@@ -27,6 +25,7 @@ public class Library {
     private Long libraryId;
     private String libraryName;
 
+
     @OneToOne(
             cascade = CascadeType.ALL
     )
@@ -35,5 +34,4 @@ public class Library {
 
     @OneToMany(mappedBy = "library", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Book> books;
-
 }

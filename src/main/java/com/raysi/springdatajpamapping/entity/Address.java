@@ -3,14 +3,15 @@ package com.raysi.springdatajpamapping.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.Size;
+import lombok.*;
 
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
+@Builder
+@ToString
 public class Address {
     @Id
     @GeneratedValue(
@@ -18,13 +19,12 @@ public class Address {
             generator = "address_seq"
     )
     @SequenceGenerator(
-            name = "author_seq",
+            name = "address_seq",
             sequenceName = "address_sequence",
             allocationSize = 116
     )
     private Long addressCode;
-    @Max(6)
-    @Min(6)
+    @Size(min = 6, max = 6)
     private String pinCode;
 
     private String city;

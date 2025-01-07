@@ -3,16 +3,17 @@ package com.raysi.springdatajpamapping.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
+@Builder
+@ToString
 public class Author {
     @Id
     @GeneratedValue(
@@ -33,7 +34,9 @@ public class Author {
     private String authorEmail;
     @NotNull
     private String phoneNo;
-    @ManyToMany
+    @ManyToMany(
+            cascade = CascadeType.ALL
+    )
     @JoinTable(
             name = "author_book",
             joinColumns = @JoinColumn(
@@ -45,5 +48,5 @@ public class Author {
                     referencedColumnName = "bookId"
             )
     )
-    private List<Book> books;
+    private List<Book> books = new ArrayList<>();
 }
