@@ -18,16 +18,19 @@ public class LibraryController {
         this.libraryService = libraryService;
     }
 
-    @PostMapping("/libray")
-    public ResponseEntity<Library> saveLibrary(@RequestBody Library library){
+    @PostMapping("/lib")
+    public ResponseEntity<?> saveLibrary(@RequestBody Library library) {
         try {
             libraryService.saveLibrary(library);
             return ResponseEntity
                     .status(HttpStatus.ACCEPTED)
                     .header("Accept-Datetime")
                     .body(library);
-        }catch (Exception e){
-            throw new RuntimeException("Something went wrong");
+        } catch (Exception e) {
+            e.printStackTrace(); // Add logging here
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error: " + e.getMessage());
         }
     }
 
