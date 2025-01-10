@@ -32,6 +32,6 @@ public class Library {
     @JoinColumn(name = "address_code", referencedColumnName = "addressCode")
     private Address address;
 
-    @OneToMany(mappedBy = "library", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "library", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private List<Book> books;
 }
