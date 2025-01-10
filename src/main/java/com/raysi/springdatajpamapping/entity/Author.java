@@ -35,7 +35,7 @@ public class Author {
     @NotNull
     private String phoneNo;
     @ManyToMany(
-            cascade = CascadeType.ALL
+            cascade = CascadeType.PERSIST
     )
     @JoinTable(
             name = "author_book",

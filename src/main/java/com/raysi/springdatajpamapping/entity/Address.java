@@ -24,7 +24,6 @@ public class Address {
             allocationSize = 116
     )
     private Long addressCode;
-    @Size(min = 6, max = 6)
     private String pinCode;
 
     private String city;

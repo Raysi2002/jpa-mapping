@@ -1,0 +1,309 @@
+I am trying to learn the mapping in spring data jpa but from last 3-4 days I am stuck on it, I don't have any idea how should I come over this, I am tired of learning from the video tutorials, I wanted to do it by myself but I am not able to do it.
+
+Just figure out where I am making mistake please
+
+These are my entites and there mappings
+
+package com.raysi.springdatajpamapping.entity;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
+import lombok.*;
+
+@Entity
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+@Builder
+@ToString
+public class Address {
+    @Id
+    @GeneratedValue(
+            strategy = GenerationType.SEQUENCE,
+            generator = "address_seq"
+    )
+    @SequenceGenerator(
+            name = "address_seq",
+            sequenceName = "address_sequence",
+            allocationSize = 116
+    )
+    private Long addressCode;
+    @Size(min = 6, max = 6)
+    private String pinCode;
+
+    private String city;
+
+    private String state;
+
+    private String country;
+}
+
+
+package com.raysi.springdatajpamapping.entity;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+@Builder
+@ToString
+public class Author {
+    @Id
+    @GeneratedValue(
+            strategy = GenerationType.SEQUENCE,
+            generator = "author_seq"
+    )
+    @SequenceGenerator(
+            name = "author_seq",
+            sequenceName = "author_sequence",
+            allocationSize = 116
+    )
+    private Long authorId;
+    @NotNull
+    private String firstName;
+    private String middleName;
+    private String lastName;
+    @Email
+    private String authorEmail;
+    @NotNull
+    private String phoneNo;
+    @ManyToMany(
+            cascade = CascadeType.ALL
+    )
+    @JoinTable(
+            name = "author_book",
+            joinColumns = @JoinColumn(
+                    name = "author_id",
+                    referencedColumnName = "authorId"
+            ),
+            inverseJoinColumns = @JoinColumn(
+                    name = "book_id",
+                    referencedColumnName = "bookId"
+            )
+    )
+    private List<Book> books = new ArrayList<>();
+}
+
+
+package com.raysi.springdatajpamapping.entity;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
+
+import java.util.List;
+
+@Entity
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+@Builder
+@ToString
+public class Book {
+    @Id
+    @GeneratedValue(
+            strategy = GenerationType.SEQUENCE,
+            generator = "book_seq"
+    )
+    @SequenceGenerator(
+            name = "book_seq",
+            sequenceName = "book_sequence",
+            allocationSize = 116
+    )
+    private Long bookId;
+    @NotNull
+    private String bookName;
+    @NotNull
+    private String genre;
+    @ManyToMany(mappedBy = "books")
+    private List<Author> authors;
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "library_id")
+    private Library library;
+}
+
+package com.raysi.springdatajpamapping.entity;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.util.List;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Entity
+@ToString
+@Builder
+public class Library {
+    @Id
+    @GeneratedValue(
+            strategy = GenerationType.SEQUENCE,
+            generator = "library_seq"
+    )
+    @SequenceGenerator(
+            name = "library_seq",
+            sequenceName = "library_sequence",
+            allocationSize = 116
+    )
+    private Long libraryId;
+    private String libraryName;
+
+
+    @OneToOne(
+            cascade = CascadeType.ALL
+    )
+    @JoinColumn(name = "address_code", referencedColumnName = "addressCode")
+    private Address address;
+
+    @OneToMany(mappedBy = "library", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Book> books;
+}
+
+-----Library Service Implementation to save ------
+package com.raysi.springdatajpamapping.service;
+
+import com.raysi.springdatajpamapping.dto.LibraryDTO;
+import com.raysi.springdatajpamapping.entity.Library;
+import com.raysi.springdatajpamapping.error.ResourceNotFoundException;
+import com.raysi.springdatajpamapping.repository.LibraryRepository;
+import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+@Transactional
+public class LibraryServiceImplementation implements LibraryService{
+
+    private final LibraryRepository libraryRepository;
+    @Autowired
+    public LibraryServiceImplementation(LibraryRepository libraryRepository) {
+        this.libraryRepository = libraryRepository;
+    }
+
+
+    @Override
+    public void saveLibrary(Library library) {
+        try {
+            libraryRepository.save(library);
+        } catch (Exception e) {
+            e.printStackTrace(); // Add logging here
+            throw new RuntimeException("Error saving library: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public List<LibraryDTO> fetchLibrary() {
+        List<LibraryDTO> libraries = libraryRepository.findAll()
+                .stream()
+                .map(library -> new LibraryDTO(
+                        library.getLibraryName(),
+                        library.getBooks(),
+                        library.getAddress()
+                )).toList();
+        if(libraries.isEmpty()){
+            throw new ResourceNotFoundException("801", "No libraries present in the database");
+        }
+        try{
+            return libraries;
+        }catch (Exception e){
+            throw new ResourceNotFoundException("802", "Something went wrong in service layer");
+        }
+    }
+}
+
+this is the controller layer
+package com.raysi.springdatajpamapping.controller;
+
+import com.raysi.springdatajpamapping.dto.LibraryDTO;
+import com.raysi.springdatajpamapping.entity.Library;
+import com.raysi.springdatajpamapping.error.ResourceNotFoundException;
+import com.raysi.springdatajpamapping.service.LibraryService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+
+@RestController
+public class LibraryController {
+    private final LibraryService libraryService;
+    @Autowired
+    public LibraryController(LibraryService libraryService){
+        this.libraryService = libraryService;
+    }
+
+    @GetMapping("/lib")
+    public ResponseEntity<List<LibraryDTO>> getLibrary(){
+        try{
+            return ResponseEntity
+                    .status(HttpStatus.FOUND)
+                    .header("Accept-Datetime")
+                    .body(libraryService.fetchLibrary());
+        }catch (ResourceNotFoundException e){
+            throw e;
+        }catch (Exception e){
+            throw new ResourceNotFoundException("803", "Something went wrong in Controller layer");
+        }
+    }
+
+    @PostMapping("/lib")
+    public ResponseEntity<?> saveLibrary(@RequestBody Library library) {
+        try {
+            libraryService.saveLibrary(library);
+            return ResponseEntity
+                    .status(HttpStatus.ACCEPTED)
+                    .header("Accept-Datetime")
+                    .body(library);
+        } catch (Exception e) {
+            e.printStackTrace(); // Add logging here
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error: " + e.getMessage());
+        }
+    }
+
+}
+
+the data I am trying to send from the APIDog in JSOn format
+{
+  "libraryName": "Downtown Library",
+  "address": {
+    "city": "Chicago",
+    "state": "IL",
+    "country": "USA",
+    "pinCode": "60601"
+  },
+  "books": [
+    {
+      "bookName": "Clean Code",
+      "genre": "Programming",
+      "authors": [
+        {
+          "firstName": "Robert",
+          "lastName": "Martin",
+          "authorEmail": "robert.martin@example.com",
+          "phoneNo": "1234567890"
+        }
+      ]
+    }
+  ]
+}

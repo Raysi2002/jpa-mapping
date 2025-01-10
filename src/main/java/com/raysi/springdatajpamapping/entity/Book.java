@@ -1,5 +1,6 @@
 package com.raysi.springdatajpamapping.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -31,7 +32,8 @@ public class Book {
     @ManyToMany(mappedBy = "books")
     private List<Author> authors;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "library_id")
+    @JsonIgnore
     private Library library;
 }

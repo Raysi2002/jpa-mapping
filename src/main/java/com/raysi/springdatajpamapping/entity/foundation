@@ -1,4 +1,0 @@
-1.	One-to-One: Each library has exactly one address.
-	2.	One-to-Many: A library can have many books.
-	3.	Many-to-One: Each book belongs to one library.
-	4.	Many-to-Many: A book can have multiple authors, and an author can write multiple books.
