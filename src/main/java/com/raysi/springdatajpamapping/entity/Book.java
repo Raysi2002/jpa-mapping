@@ -32,7 +32,7 @@ public class Book {
     @ManyToMany(mappedBy = "books")
     private List<Author> authors;
 
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "library_id")
     @JsonIgnore
     private Library library;
